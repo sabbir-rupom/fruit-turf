@@ -1,0 +1,31 @@
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+import { bunny } from 'laravel-vite-plugin/fonts';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            refresh: true,
+            fonts: [
+                bunny('DM Sans', {
+                    weights: [400, 500, 600, 700],
+                    optimizedFallbacks: false,
+                }),
+                bunny('DM Serif Display', {
+                    weights: [400],
+                    optimizedFallbacks: false,
+                }),
+            ],
+        }),
+        react(),
+        tailwindcss(),
+    ],
+    server: {
+        watch: {
+            ignored: ['**/storage/framework/views/**'],
+        },
+    },
+});

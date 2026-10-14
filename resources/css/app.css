@@ -1,0 +1,66 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../js/**/*.tsx';
+
+@theme {
+    --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --color-leaf-50: #f0f7f1;
+    --color-leaf-100: #dcebdd;
+    --color-leaf-500: #5c9b69;
+    --color-leaf-600: #316b4a;
+    --color-leaf-700: #25553b;
+    --color-ink: #183329;
+    --color-muted: #6c7c71;
+    --color-cream: #f8f8f3;
+}
+
+:root {
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    color: #183329;
+    background: #f8f8f3;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+::selection {
+    color: #fff;
+    background: #316b4a;
+}
+
+@layer components {
+    .field-input {
+        @apply mt-1 w-full rounded-xl border border-leaf-100 bg-white px-3.5 py-3 text-sm text-ink outline-none transition focus:border-leaf-500 focus:ring-2 focus:ring-leaf-100;
+    }
+
+    @media print {
+        .no-print,
+        footer {
+            display: none !important;
+        }
+
+        body {
+            background: #fff;
+        }
+    }
+}
