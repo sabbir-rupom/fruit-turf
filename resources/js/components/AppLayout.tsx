@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import type { SharedProps } from '../types';
 import { useCart } from '../contexts/CartContext';
+import { ToastViewport } from './ToastViewport';
 
 export function AppLayout({ children }: { children: ReactNode }) {
     const { auth, flash } = usePage<SharedProps>().props;
@@ -47,6 +48,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             {flash.success && <div className="mx-auto mt-5 max-w-7xl px-5 lg:px-8"><div className="rounded-xl border border-leaf-100 bg-leaf-50 px-4 py-3 text-sm text-leaf-700">{flash.success}</div></div>}
             {flash.error && <div className="mx-auto mt-5 max-w-7xl px-5 lg:px-8"><div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{flash.error}</div></div>}
             {children}
+            <ToastViewport />
             <footer className="no-print mt-20 border-t border-leaf-100 bg-white">
                 <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between lg:px-8">
                     <span>Fruit Turf · Fresh from our growers to your table.</span>

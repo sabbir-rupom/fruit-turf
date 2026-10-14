@@ -15,7 +15,9 @@ class ManualRefundStrategy implements RefundStrategy
             'type' => 'refund',
             'status' => 'paid',
             'amount' => $refund->amount,
-            'provider' => 'manual',
+            'provider' => $refund->order->payment_method === PaymentConfiguration::METHOD_STRIPE
+                ? PaymentConfiguration::METHOD_STRIPE
+                : 'manual',
             'gateway_reference' => $gatewayReference,
             'processed_at' => now(),
         ]);

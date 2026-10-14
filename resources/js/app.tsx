@@ -2,6 +2,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import type { ResolvedComponent } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 import { CartProvider } from './contexts/CartContext';
+import { ToastProvider } from './contexts/ToastContext';
 
 const pages = import.meta.glob<{ default: ResolvedComponent }>('./Pages/**/*.tsx', {
     eager: true,
@@ -24,9 +25,11 @@ void createInertiaApp({
         }
 
         createRoot(el).render(
-            <CartProvider>
-                <App {...props} />
-            </CartProvider>,
+            <ToastProvider>
+                <CartProvider>
+                    <App {...props} />
+                </CartProvider>
+            </ToastProvider>,
         );
     },
     progress: { color: '#316b4a' },

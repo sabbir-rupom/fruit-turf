@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Events\OrderStatusChanged;
 use App\Models\InventoryMovement;
 use App\Models\Order;
+use App\Services\PaymentConfiguration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -21,9 +22,9 @@ class OrderStatusService
         'cancelled' => [],
     ];
 
-    public function update(Order $order, string $status, int $adminId): Order
+    public function update(Order $order, string $status, ?int $adminId, ?string $note = null): Order
     {
-        return DB::transaction(function () use ($order, $status, $adminId): Order {
+        return DB::transaction(function () use ($order, $status, $adminId, $note): Order {
             $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
             $allowed = self::TRANSITIONS[$order->status] ?? [];
 
@@ -36,6 +37,22 @@ class OrderStatusService
             if ($status === Order::STATUS_CANCELLED && $order->payment_status === Order::PAYMENT_PAID) {
                 throw ValidationException::withMessages([
                     'status' => 'A paid order must be refunded before it can be cancelled.',
+                ]);
+            }
+
+            if ($status === Order::STATUS_CANCELLED
+                && $order->payment_method === PaymentConfiguration::METHOD_STRIPE
+                && $order->payment_status === Order::PAYMENT_PENDING) {
+                throw ValidationException::withMessages([
+                    'status' => 'Wait for Stripe to expire this payment session before cancelling the order.',
+                ]);
+            }
+
+            if ($order->payment_method === PaymentConfiguration::METHOD_STRIPE
+                && $order->payment_status !== Order::PAYMENT_PAID
+                && in_array($status, [Order::STATUS_PROCESSING, Order::STATUS_SHIPPED, Order::STATUS_DELIVERED], true)) {
+                throw ValidationException::withMessages([
+                    'status' => 'A Stripe order can only be fulfilled after payment is confirmed.',
                 ]);
             }
 
@@ -63,14 +80,14 @@ class OrderStatusService
                         'user_id' => $adminId,
                         'type' => 'cancellation',
                         'quantity_delta' => $quantity,
-                        'reason' => "Stock restored for cancelled order {$order->invoice_number}",
+                        'reason' => $note ?? "Stock restored for cancelled order {$order->invoice_number}",
                     ]);
                 }
             }
 
             $previousStatus = $order->status;
             $order->update(['status' => $status]);
-            event(new OrderStatusChanged($order, $previousStatus, $status, $adminId));
+            event(new OrderStatusChanged($order, $previousStatus, $status, $adminId, $note));
 
             return $order->refresh();
         }, 3);

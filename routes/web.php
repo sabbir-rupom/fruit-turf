@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\PaymentSettingsController as AdminPaymentSettingsController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
@@ -14,6 +15,8 @@ use App\Http\Controllers\AddressController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\StorefrontController;
+use App\Http\Controllers\StripePaymentController;
+use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StorefrontController::class, 'index'])->name('shop.index');
@@ -21,6 +24,11 @@ Route::get('/products/{product:slug}', [StorefrontController::class, 'show'])->n
 Route::get('/checkout', [CheckoutController::class, 'create'])->middleware('active')->name('checkout.create');
 Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('active')->name('checkout.store');
 Route::get('/orders/{order:invoice_number}/confirmation', [CheckoutController::class, 'confirmation'])->name('orders.confirmation');
+Route::get('/payments/stripe/return/{order:invoice_number}', [StripePaymentController::class, 'returned'])->name('payments.stripe.return');
+Route::get('/payments/stripe/cancelled/{order:invoice_number}', [StripePaymentController::class, 'cancelled'])->name('payments.stripe.cancelled');
+Route::post('/stripe/webhook', StripeWebhookController::class)
+    ->middleware('throttle:60,1')
+    ->name('stripe.webhook');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'create'])->name('login');
@@ -64,4 +72,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/export', [AdminReportController::class, 'export'])->name('reports.export');
     Route::get('/reports/purchases/export', [AdminReportController::class, 'purchases'])->name('reports.purchases');
+    Route::get('/settings/payments', [AdminPaymentSettingsController::class, 'edit'])->name('settings.payments.edit');
+    Route::put('/settings/payments', [AdminPaymentSettingsController::class, 'update'])->name('settings.payments.update');
 });

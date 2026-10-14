@@ -12,6 +12,7 @@ const links = [
     { label: 'Refunds', href: '/admin/refunds' },
     { label: 'Customers', href: '/admin/customers' },
     { label: 'Reports', href: '/admin/reports' },
+    { label: 'Payment settings', href: '/admin/settings/payments' },
 ];
 
 export function AdminLayout({ children, title }: { children: ReactNode; title: string }) {

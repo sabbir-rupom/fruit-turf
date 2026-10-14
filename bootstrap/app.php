@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [HandleInertiaRequests::class]);
+        $middleware->validateCsrfTokens(except: ['stripe/webhook']);
         $middleware->alias([
             'active' => EnsureActiveUser::class,
             'admin' => EnsureAdmin::class,

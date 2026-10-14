@@ -16,7 +16,7 @@ class RefundController extends Controller
     {
         return Inertia::render('Admin/Refunds/Index', [
             'refunds' => Refund::query()
-                ->with(['order:id,invoice_number,buyer_name,buyer_email,currency', 'items.orderItem:id,product_title,unit,quantity'])
+                ->with(['order:id,invoice_number,buyer_name,buyer_email,currency,payment_method', 'items.orderItem:id,product_title,unit,quantity'])
                 ->latest()
                 ->paginate(20),
         ]);

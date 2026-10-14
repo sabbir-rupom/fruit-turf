@@ -7,5 +7,7 @@ use App\Models\Transaction;
 
 interface PaymentStrategy
 {
+    public function method(): string;
+
     public function settle(Order $order, string $gatewayReference): Transaction;
 }

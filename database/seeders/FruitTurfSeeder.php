@@ -25,14 +25,14 @@ class FruitTurfSeeder extends Seeder
         }
 
         $products = [
-            ['title' => 'Sunshine Oranges', 'slug' => 'sunshine-oranges', 'category' => 'citrus', 'price' => 280, 'unit' => 'per kg', 'stock' => 24, 'featured' => true, 'color' => 'photo-1547514701-42782101795e'],
-            ['title' => 'Ruby Strawberries', 'slug' => 'ruby-strawberries', 'category' => 'berries', 'price' => 480, 'unit' => 'per box', 'stock' => 12, 'featured' => true, 'color' => 'photo-1464965911861-746a04b4bca6'],
-            ['title' => 'Golden Mangoes', 'slug' => 'golden-mangoes', 'category' => 'tropical', 'price' => 360, 'unit' => 'per kg', 'stock' => 18, 'featured' => true, 'color' => 'photo-1553279768-865429fa0078'],
-            ['title' => 'Green Avocados', 'slug' => 'green-avocados', 'category' => 'tropical', 'price' => 420, 'unit' => 'per kg', 'stock' => 5, 'featured' => false, 'color' => 'photo-1523049673857-eb18f1d7b578'],
-            ['title' => 'Blueberry Bunch', 'slug' => 'blueberry-bunch', 'category' => 'berries', 'price' => 540, 'unit' => 'per box', 'stock' => 16, 'featured' => true, 'color' => 'photo-1498557850523-fd3d118b962e'],
-            ['title' => 'Sweet Pineapple', 'slug' => 'sweet-pineapple', 'category' => 'seasonal', 'price' => 190, 'unit' => 'each', 'stock' => 9, 'featured' => false, 'color' => 'photo-1550258987-190a2d41a8ba'],
-            ['title' => 'Organic Green Grapes', 'slug' => 'organic-green-grapes', 'category' => 'organic', 'price' => 390, 'unit' => 'per kg', 'stock' => 14, 'featured' => true, 'color' => 'photo-1537640538966-79f369143f8f'],
-            ['title' => 'Fresh Lemons', 'slug' => 'fresh-lemons', 'category' => 'citrus', 'price' => 220, 'unit' => 'per dozen', 'stock' => 3, 'featured' => false, 'color' => 'photo-1513558161293-cdaf765edfd7'],
+            ['title' => 'Sunshine Oranges', 'slug' => 'sunshine-oranges', 'category' => 'citrus', 'price' => 3.49, 'unit' => 'per kg', 'stock' => 24, 'featured' => true, 'color' => 'photo-1547514701-42782101795e'],
+            ['title' => 'Ruby Strawberries', 'slug' => 'ruby-strawberries', 'category' => 'berries', 'price' => 5.99, 'unit' => 'per box', 'stock' => 12, 'featured' => true, 'color' => 'photo-1464965911861-746a04b4bca6'],
+            ['title' => 'Golden Mangoes', 'slug' => 'golden-mangoes', 'category' => 'tropical', 'price' => 4.50, 'unit' => 'per kg', 'stock' => 18, 'featured' => true, 'color' => 'photo-1553279768-865429fa0078'],
+            ['title' => 'Green Avocados', 'slug' => 'green-avocados', 'category' => 'tropical', 'price' => 4.99, 'unit' => 'per kg', 'stock' => 5, 'featured' => false, 'color' => 'photo-1523049673857-eb18f1d7b578'],
+            ['title' => 'Blueberry Bunch', 'slug' => 'blueberry-bunch', 'category' => 'berries', 'price' => 6.99, 'unit' => 'per box', 'stock' => 16, 'featured' => true, 'color' => 'photo-1498557850523-fd3d118b962e'],
+            ['title' => 'Sweet Pineapple', 'slug' => 'sweet-pineapple', 'category' => 'seasonal', 'price' => 2.49, 'unit' => 'each', 'stock' => 9, 'featured' => false, 'color' => 'photo-1550258987-190a2d41a8ba'],
+            ['title' => 'Organic Green Grapes', 'slug' => 'organic-green-grapes', 'category' => 'organic', 'price' => 5.49, 'unit' => 'per kg', 'stock' => 14, 'featured' => true, 'color' => 'photo-1537640538966-79f369143f8f'],
+            ['title' => 'Fresh Lemons', 'slug' => 'fresh-lemons', 'category' => 'citrus', 'price' => 3.49, 'unit' => 'per dozen', 'stock' => 3, 'featured' => false, 'color' => 'photo-1513558161293-cdaf765edfd7'],
         ];
 
         foreach ($products as $product) {

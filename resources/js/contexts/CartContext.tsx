@@ -11,7 +11,7 @@ interface CartContextValue {
     count: number;
     subtotal: number;
     ready: boolean;
-    add: (product: Product, quantity?: number) => void;
+    add: (product: Product, quantity?: number) => boolean;
     setQuantity: (productId: number, quantity: number) => void;
     remove: (productId: number) => void;
     clear: () => void;
@@ -77,6 +77,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         count: lines.reduce((count, line) => count + line.quantity, 0),
         subtotal: lines.reduce((total, line) => total + Number(line.product.price) * line.quantity, 0),
         add(product, quantity = 1) {
+            const currentQuantity = lines.find((line) => line.product.id === product.id)?.quantity ?? 0;
+            const quantityToAdd = Math.min(quantity, Number(product.stock_quantity) - currentQuantity);
+
+            if (quantityToAdd <= 0) {
+                return false;
+            }
+
             setLines((current) => {
                 const existing = current.find((line) => line.product.id === product.id);
                 return existing
@@ -85,6 +92,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         : line)
                     : [...current, { product, quantity: Math.min(quantity, Number(product.stock_quantity)) }];
             });
+
+            return true;
         },
         setQuantity(productId, quantity) {
             setLines((current) => current.flatMap((line) => {

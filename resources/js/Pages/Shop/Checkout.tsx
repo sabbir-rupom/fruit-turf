@@ -7,6 +7,7 @@ import type { User } from '../../types';
 
 interface Props {
     customer: (Pick<User, 'name' | 'email' | 'phone'> & { default_address: string | null }) | null;
+    paymentMethods: { cash_on_delivery: boolean; stripe: boolean };
 }
 
 interface CheckoutData {
@@ -15,20 +16,26 @@ interface CheckoutData {
     phone: string;
     delivery_address: string;
     customer_note: string;
+    payment_method: 'cash_on_delivery' | 'stripe';
     create_account: boolean;
     password: string;
     password_confirmation: string;
     items: { product_id: number; quantity: number }[];
 }
 
-export default function Checkout({ customer }: Props) {
+const PHONE_NUMBER_PATTERN = String.raw`^\+?(?=(?:\D*\d){7,15}\D*$)[0-9\s().-]+$`;
+
+export default function Checkout({ customer, paymentMethods }: Props) {
     const { lines, subtotal, setQuantity, remove, clear, ready } = useCart();
+    const initialPaymentMethod = paymentMethods.cash_on_delivery ? 'cash_on_delivery' : 'stripe';
+    const hasPaymentMethods = paymentMethods.cash_on_delivery || paymentMethods.stripe;
     const form = useForm<CheckoutData>({
         name: customer?.name ?? '',
         email: customer?.email ?? '',
         phone: customer?.phone ?? '',
         delivery_address: customer?.default_address ?? '',
         customer_note: '',
+        payment_method: initialPaymentMethod,
         create_account: false,
         password: '',
         password_confirmation: '',
@@ -64,9 +71,9 @@ export default function Checkout({ customer }: Props) {
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 <Field label="Full name" error={form.errors.name}><input required maxLength={160} autoComplete="name" value={form.data.name} onChange={(event) => form.setData('name', event.target.value)} className="field-input" /></Field>
                                 <Field label="Email address" error={form.errors.email}><input required type="email" maxLength={254} autoComplete="email" value={form.data.email} onChange={(event) => form.setData('email', event.target.value)} className="field-input" /></Field>
-                                <Field label="Phone (optional)" error={form.errors.phone}><input type="tel" maxLength={30} autoComplete="tel" value={form.data.phone} onChange={(event) => form.setData('phone', event.target.value)} className="field-input" /></Field>
+                                <Field label={form.data.create_account ? 'Phone number (required for account creation)' : 'Phone number'} error={form.errors.phone}><input type="tel" required={form.data.create_account} pattern={PHONE_NUMBER_PATTERN} title="Enter 7 to 15 digits, optionally with a leading country code, spaces, parentheses or hyphens." maxLength={30} autoComplete="tel" value={form.data.phone} onChange={(event) => form.setData('phone', event.target.value)} className="field-input" /><span className="mt-1 block text-xs font-normal text-muted">Use 7 to 15 digits. A country code is optional.</span></Field>
                                 <div className="sm:col-span-2"><Field label="Delivery address" error={form.errors.delivery_address}><textarea required rows={3} maxLength={2000} autoComplete="street-address" value={form.data.delivery_address} onChange={(event) => form.setData('delivery_address', event.target.value)} placeholder="House, street, area, city and any delivery notes" className="field-input resize-y" /></Field></div>
-                                <div className="sm:col-span-2"><Field label="Note for the grower (optional)" error={form.errors.customer_note}><textarea rows={2} maxLength={1000} value={form.data.customer_note} onChange={(event) => form.setData('customer_note', event.target.value)} placeholder="Anything we should know?" className="field-input resize-y" /></Field></div>
+                                <div className="sm:col-span-2"><Field label="Note for the seller (optional)" error={form.errors.customer_note}><textarea rows={2} maxLength={1000} value={form.data.customer_note} onChange={(event) => form.setData('customer_note', event.target.value)} placeholder="Anything we should know?" className="field-input resize-y" /></Field></div>
                             </div>
                             {!customer && (
                                 <div className="mt-6 rounded-2xl bg-leaf-50 p-4">
@@ -81,13 +88,17 @@ export default function Checkout({ customer }: Props) {
                                 </div>
                             )}
                             {form.errors.items && <p className="mt-4 text-sm text-red-700">{form.errors.items}</p>}
+                            {form.errors.payment_method && <p className="mt-4 text-sm text-red-700">{form.errors.payment_method}</p>}
                         </section>
                         <aside className="rounded-3xl border border-leaf-100 bg-white p-6 sm:p-8 lg:sticky lg:top-6">
-                            <h2 className="font-display text-2xl">Your basket <span className="font-sans text-sm font-normal text-muted">({lines.length} items)</span></h2>
+                            <div className="flex items-center justify-between gap-3">
+                                <h2 className="font-display text-2xl">Your basket <span className="font-sans text-sm font-normal text-muted">({lines.length} items)</span></h2>
+                                <button type="button" onClick={clear} className="shrink-0 rounded-full border border-leaf-200 px-3 py-2 text-xs font-semibold text-leaf-700 transition hover:bg-leaf-50">Clear basket</button>
+                            </div>
                             <div className="mt-5 divide-y divide-leaf-100">
                                 {lines.map(({ product, quantity }) => <div key={product.id} className="flex gap-3 py-4">
                                     <div className="min-w-0 flex-1"><p className="font-semibold">{product.title}</p><p className="mt-1 text-sm text-muted">{money(product.price)} · {product.unit}</p><button type="button" onClick={() => remove(product.id)} className="mt-2 text-xs font-semibold text-muted underline hover:text-red-700">Remove</button></div>
-                                    <input aria-label={`${product.title} quantity`} type="number" min="0.001" max={product.stock_quantity} step="0.001" value={quantity} onChange={(event) => setQuantity(product.id, Number(event.target.value))} className="h-10 w-24 rounded-lg border border-leaf-100 px-2 text-sm" />
+                                    <input aria-label={`${product.title} quantity`} type="number" min="0" max={product.stock_quantity} step="1" value={quantity} onChange={(event) => setQuantity(product.id, Number(event.target.value))} className="h-10 w-24 rounded-lg border border-leaf-100 px-2 text-sm" />
                                     <p className="w-20 pt-2 text-right text-sm font-semibold">{money(Number(product.price) * quantity)}</p>
                                 </div>)}
                             </div>
@@ -96,8 +107,19 @@ export default function Checkout({ customer }: Props) {
                                 <div className="mt-2 flex items-center justify-between text-sm text-muted"><span>Delivery</span><span>Calculated at delivery</span></div>
                                 <div className="mt-4 flex items-center justify-between font-semibold"><span>Total</span><span className="text-xl">{money(subtotal)}</span></div>
                             </div>
-                            <div className="mt-5 rounded-xl bg-leaf-50 p-3 text-xs leading-5 text-leaf-700">Payment is collected on delivery. You won’t be asked for card details here.</div>
-                            <button type="submit" disabled={form.processing} className="mt-5 w-full rounded-full bg-leaf-600 px-6 py-3.5 font-semibold text-white transition hover:bg-leaf-700">{form.processing ? 'Placing order…' : 'Place your order'}</button>
+                            <fieldset className="mt-5 space-y-3">
+                                <legend className="mb-2 text-sm font-semibold">Payment method</legend>
+                                {!hasPaymentMethods && <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Checkout is temporarily unavailable because no payment method is currently configured.</p>}
+                                {paymentMethods.cash_on_delivery && <label className="flex cursor-pointer gap-3 rounded-xl border border-leaf-100 p-3 text-sm">
+                                    <input type="radio" name="payment_method" value="cash_on_delivery" checked={form.data.payment_method === 'cash_on_delivery'} onChange={() => form.setData('payment_method', 'cash_on_delivery')} className="mt-1 accent-leaf-600" />
+                                    <span><span className="font-semibold">Cash on delivery</span><span className="mt-1 block text-xs text-muted">Pay when your fresh delivery arrives.</span></span>
+                                </label>}
+                                {paymentMethods.stripe && <label className="flex cursor-pointer gap-3 rounded-xl border border-leaf-100 p-3 text-sm">
+                                    <input type="radio" name="payment_method" value="stripe" checked={form.data.payment_method === 'stripe'} onChange={() => form.setData('payment_method', 'stripe')} className="mt-1 accent-leaf-600" />
+                                    <span><span className="font-semibold">Card with Stripe</span><span className="mt-1 block text-xs text-muted">Pay securely on Stripe’s hosted checkout page.</span></span>
+                                </label>}
+                            </fieldset>
+                            <button type="submit" disabled={form.processing || !hasPaymentMethods} className="mt-5 w-full rounded-full bg-leaf-600 px-6 py-3.5 font-semibold text-white transition hover:bg-leaf-700 disabled:opacity-60">{form.processing ? 'Placing order…' : form.data.payment_method === 'stripe' ? 'Continue to secure payment' : 'Place your order'}</button>
                         </aside>
                     </form>
                 )}

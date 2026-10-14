@@ -2,11 +2,13 @@ import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { AppLayout } from '../../components/AppLayout';
 import { useCart } from '../../contexts/CartContext';
+import { useToast } from '../../contexts/ToastContext';
 import { imageUrl, money } from '../../lib/format';
 import type { Product } from '../../types';
 
 export default function ShopShow({ product }: { product: Product }) {
     const { add } = useCart();
+    const { showToast } = useToast();
     const photos = [product.featured_image, ...(product.image_gallery ?? [])]
         .map(imageUrl)
         .filter((photo): photo is string => photo !== null);
@@ -33,7 +35,16 @@ export default function ShopShow({ product }: { product: Product }) {
                             <p className="mt-2 text-sm text-muted">{Number(product.stock_quantity) > 0 ? `${product.stock_quantity} ${product.unit.replace('per ', '')} available today` : 'Currently out of stock'}</p>
                         </div>
                         <div className="mt-7 flex flex-wrap gap-3">
-                            <button onClick={() => add(product)} disabled={Number(product.stock_quantity) <= 0} className="rounded-full bg-leaf-600 px-7 py-3 font-semibold text-white transition hover:bg-leaf-700">Add to basket</button>
+                            <button onClick={() => {
+                                const added = add(product);
+                                showToast(
+                                    added ? `${product.title} added to your basket.` : `${product.title} is already at the available stock limit.`,
+                                    {
+                                        variant: added ? 'success' : 'info',
+                                        ...(added ? { action: { label: 'View basket', href: '/checkout' } } : {}),
+                                    },
+                                );
+                            }} disabled={Number(product.stock_quantity) <= 0} className="rounded-full bg-leaf-600 px-7 py-3 font-semibold text-white transition hover:bg-leaf-700">Add to basket</button>
                             <Link href="/checkout" className="rounded-full border border-leaf-200 px-7 py-3 font-semibold text-leaf-700 transition hover:bg-leaf-50">Go to checkout</Link>
                         </div>
                         <p className="mt-7 text-xs leading-5 text-muted">Fresh produce is packed close to delivery. If anything isn’t just right, our team will make it right.</p>

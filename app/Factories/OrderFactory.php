@@ -13,7 +13,7 @@ class OrderFactory
      *
      * @param array<string, mixed> $buyer
      */
-    public function make(array $buyer, ?User $customer, float $subtotal): Order
+    public function make(array $buyer, ?User $customer, float $subtotal, string $paymentMethod): Order
     {
         return new Order([
             'invoice_number' => 'FT-'.now()->format('ymd').'-'.Str::upper(Str::random(8)),
@@ -24,7 +24,7 @@ class OrderFactory
             'delivery_address' => $buyer['delivery_address'],
             'status' => Order::STATUS_PENDING,
             'payment_status' => Order::PAYMENT_PENDING,
-            'payment_method' => 'cash_on_delivery',
+            'payment_method' => $paymentMethod,
             'currency' => config('fruit-turf.currency', 'BDT'),
             'subtotal' => $subtotal,
             'total' => $subtotal,

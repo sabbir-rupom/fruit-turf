@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { AppLayout } from '../../components/AppLayout';
 import { Pagination } from '../../components/Pagination';
 import { useCart } from '../../contexts/CartContext';
+import { useToast } from '../../contexts/ToastContext';
 import { imageUrl, money } from '../../lib/format';
 import type { Category, Paginated, Product } from '../../types';
 
@@ -15,6 +16,18 @@ interface Props {
 export default function ShopIndex({ products, categories, filters }: Props) {
     const [search, setSearch] = useState(filters.search);
     const { add } = useCart();
+    const { showToast } = useToast();
+
+    function addToBasket(product: Product) {
+        const added = add(product);
+        showToast(
+            added ? `${product.title} added to your basket.` : `${product.title} is already at the available stock limit.`,
+            {
+                variant: added ? 'success' : 'info',
+                ...(added ? { action: { label: 'View basket', href: '/checkout' } } : {}),
+            },
+        );
+    }
 
     function applySearch(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -92,7 +105,7 @@ export default function ShopIndex({ products, categories, filters }: Props) {
                                                 <p className="mt-1 min-h-10 text-sm leading-5 text-muted">{product.short_description}</p>
                                                 <div className="mt-4 flex items-center justify-between">
                                                     <p className="font-semibold">{money(product.price)}<span className="ml-1 text-xs font-normal text-muted">/{product.unit.replace('per ', '')}</span></p>
-                                                    <button onClick={() => add(product)} disabled={Number(product.stock_quantity) <= 0} className="grid size-10 place-items-center rounded-full bg-leaf-50 text-xl font-medium text-leaf-700 transition hover:bg-leaf-600 hover:text-white" aria-label={`Add ${product.title} to basket`}>+</button>
+                                                    <button onClick={() => addToBasket(product)} disabled={Number(product.stock_quantity) <= 0} className="grid size-10 place-items-center rounded-full bg-leaf-50 text-xl font-medium text-leaf-700 transition hover:bg-leaf-600 hover:text-white" aria-label={`Add ${product.title} to basket`}>+</button>
                                                 </div>
                                             </div>
                                         </article>

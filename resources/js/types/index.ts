@@ -77,7 +77,7 @@ export interface Refund {
     status: 'pending' | 'processed' | 'rejected';
     gateway_reference: string | null;
     created_at: string;
-    order?: Pick<Order, 'invoice_number' | 'buyer_name' | 'buyer_email' | 'currency'>;
+    order?: Pick<Order, 'invoice_number' | 'buyer_name' | 'buyer_email' | 'currency' | 'payment_method'>;
     items?: RefundItem[];
 }
 

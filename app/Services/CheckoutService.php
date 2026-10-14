@@ -9,11 +9,8 @@ use App\Factories\OrderFactory;
 use App\Jobs\SendOrderConfirmation;
 use App\Models\InventoryMovement;
 use App\Models\Order;
-use App\Models\Transaction;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class CheckoutService
@@ -22,6 +19,7 @@ class CheckoutService
         private readonly ProductRepository $products,
         private readonly OrderRepository $orders,
         private readonly OrderFactory $orderFactory,
+        private readonly PaymentConfiguration $paymentConfiguration,
     ) {}
 
     /**
@@ -52,6 +50,13 @@ class CheckoutService
                 }
             }
 
+            $paymentMethod = $data['payment_method'] ?? PaymentConfiguration::METHOD_CASH_ON_DELIVERY;
+            if (! in_array($paymentMethod, $this->paymentConfiguration->enabledMethods(), true)) {
+                throw ValidationException::withMessages([
+                    'payment_method' => 'That payment method is currently unavailable. Choose another payment method.',
+                ]);
+            }
+
             $customer = $authenticatedCustomer;
             if (! $customer && ($data['create_account'] ?? false)) {
                 $customer = User::query()->create([
@@ -76,7 +81,7 @@ class CheckoutService
                 ];
             }
 
-            $order = $this->orders->save($this->orderFactory->make($data, $customer, $subtotal));
+            $order = $this->orders->save($this->orderFactory->make($data, $customer, $subtotal, $paymentMethod));
             event(new OrderStatusChanged($order, null, Order::STATUS_PENDING, null, 'Order placed'));
 
             foreach ($lineItems as $lineItem) {
@@ -106,11 +111,13 @@ class CheckoutService
                 'type' => 'payment',
                 'status' => 'pending',
                 'amount' => $subtotal,
-                'provider' => 'cash_on_delivery',
+                'provider' => $paymentMethod,
             ]);
 
             $order->load('customer');
-            SendOrderConfirmation::dispatch($order);
+            if ($paymentMethod === PaymentConfiguration::METHOD_CASH_ON_DELIVERY) {
+                SendOrderConfirmation::dispatch($order);
+            }
 
             return $order;
         }, 3);
